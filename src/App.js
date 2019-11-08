@@ -20,6 +20,7 @@ import EditDep from "./components/deps/EditDep";
 import EditSite from "./components/sites/EditSite";
 import ShowSite from "./components/sites/ShowSite";
 import Sites from "./components/sites/Sites";
+import Messages  from "./components/messages/MessageScreen"
 
 class App extends Component {
   render() {
@@ -34,6 +35,7 @@ class App extends Component {
             <Route path="/signup" component={SignUp} />
             <Route path="/create" component={CreateProject} />
             <Route path="/jobboard" component={JobBoard} />
+            <Route path="/messages" component={Messages} />
             <Route path="/createjob" component={CreateJob} />
             <Route path="/users" component={Users} />
             <Route path="/deps" component={Deps} />

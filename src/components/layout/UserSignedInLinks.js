@@ -13,7 +13,9 @@ const UserSignedInLinks = props => {
         <li>
           <NavLink to="/jobboard">Jobs Board</NavLink>
         </li>
-
+        <li>
+          <NavLink to="/messages">Messages</NavLink>
+        </li>
         <li>
           <a onClick={props.signOut}>Log Out</a>
         </li>

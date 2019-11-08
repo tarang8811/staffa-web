@@ -12,7 +12,8 @@ class SignUp extends Component {
     isSingleSite: "true",
     isSingleDep: "true",
     accountName: "",
-    orgType: ""
+    orgType: "",
+    type: "agency"
   };
   handleChange = e => {
     this.setState({
