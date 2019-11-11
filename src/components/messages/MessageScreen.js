@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 // import ReactLoading from 'react-loading'
 import WelcomeBoard from './WelcomeBoard/WelcomeBoard'
 import './MessageScreen.css'
-// import ChatBoard from './ChatBoard/ChatBoard'
+import ChatBoard from './ChatBoard/ChatBoard'
 import { connect } from "react-redux";
 import { 
   getUserConversationNodeForChat, 
@@ -17,7 +17,8 @@ class MessageScreen extends Component {
         this.state = {
             isLoading: true,
             currentPeerUser: null,
-            users: []
+            users: [],
+            topicName: ''
         }
         this.currentUserId = props.auth.uid
         // this.currentUserAvatar = localStorage.getItem(AppString.PHOTO_URL)
@@ -76,6 +77,7 @@ class MessageScreen extends Component {
     }
 
     renderListUser = () => {
+      console.log(this.state.users)
         if (this.state.users.length > 0) {
             let viewListUser = []
             this.state.users.forEach((item, index) => {
@@ -90,12 +92,12 @@ class MessageScreen extends Component {
                                     : 'viewWrapItem'
                             }
                             onClick={() => {
-                                this.setState({currentPeerUser: item.user})
+                                this.setState({currentPeerUser: item.user, topicName: item.topicName})
                             }}
                         >
                             <img
                                 className="viewAvatarItem"
-                                src={item.user.bio.profilePic}
+                                src={item.user.bio.profilePicURL}
                                 alt="icon avatar"
                             />
                             <div className="viewWrapContentItem">
@@ -122,12 +124,6 @@ class MessageScreen extends Component {
                 {/* Header */}
                 <div className="header">
                     <span>Messages</span>
-                    <img
-                        className="icProfile"
-                        alt="An icon default avatar"
-                        // src={images.ic_default_avatar}
-                        onClick={this.onProfileClick}
-                    />
                 </div>
 
                 {/* Body */}
@@ -137,6 +133,8 @@ class MessageScreen extends Component {
                         {this.state.currentPeerUser ? (
                             <ChatBoard
                                 currentPeerUser={this.state.currentPeerUser}
+                                currentUserId={this.currentUserId}
+                                topicName={this.state.topicName}
                                 showToast={this.props.showToast}
                             />
                         ) : (

@@ -31,6 +31,16 @@ export const isUserConversationExist = (userID, callBack) => {
     });
 }
 
+export const getUserConversationNode = (userID, chatUID) => {
+  var users = firebaseApp
+    .firestore()
+    .collection(Strings.FS_COLLECTION_USER_CONVERSATION);
+  var userDoc = users.doc(userID);
+  userDoc.set({set: true});
+  var conversation = userDoc.collection(Strings.FS_COLLECTION_CONVERSATION);
+  return conversation.doc(chatUID);
+}
+
 export const getUserData = (userID, callBack) => {
   var users = firebaseApp.firestore().collection(Strings.FS_COLLECTION_USERS);
   var userDoc = users.doc(userID);
@@ -50,5 +60,13 @@ export const getConversationMessagesNode = (chatUID) => {
     .collection(Strings.FS_COLLECTION_CONVERSATION)
     .doc(chatUID);
   return chatRef.collection(Strings.FS_COLLECTION_MESSAGES);
+}
+
+export const getChatUID = (uid1, uid2, topicName) => {
+  if (uid1 < uid2) {
+    return uid1 + uid2 + '%' + topicName.toLowerCase();
+  } else {
+    return uid2 + uid1 + '%' + topicName.toLowerCase();
+  }
 }
 
