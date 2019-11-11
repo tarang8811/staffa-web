@@ -23,7 +23,7 @@ export default class ChatBoard extends Component {
         }
         this.currentUserId = props.currentUserId
         // this.currentUserAvatar = localStorage.getItem(AppString.PHOTO_URL)
-        this.currentUserNickname = "My Nick Name"
+        this.currentUserNickname = props.initials
         this.currentPeerUser = props.currentPeerUser
         this.removeListener = null
         this.currentPhotoFile = null

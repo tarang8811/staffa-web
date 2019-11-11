@@ -22,7 +22,7 @@ class MessageScreen extends Component {
         }
         this.currentUserId = props.auth.uid
         // this.currentUserAvatar = localStorage.getItem(AppString.PHOTO_URL)
-        this.currentUserNickname = 'My Nick Name'
+        this.currentUserNickname = props.profile.initials
         this.listUser = []
     }
 
@@ -135,6 +135,7 @@ class MessageScreen extends Component {
                                 currentPeerUser={this.state.currentPeerUser}
                                 currentUserId={this.currentUserId}
                                 topicName={this.state.topicName}
+                                initials={this.currentUserNickname}
                                 showToast={this.props.showToast}
                             />
                         ) : (
