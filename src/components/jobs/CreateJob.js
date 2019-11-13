@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { Redirect, Link } from "react-router-dom";
 import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
+import Strings from '../../utilities/Strings'
 
 const stripe =    window.Stripe('pk_test_hXktgS5TKCYejAlnTAaoG7ms00PukUgrpb');
 
@@ -14,14 +15,22 @@ export class CreateJob extends Component {
     dep: "",
     cost: "",
     showFundShift: false,
-    showSubmitButton: false
+    showSubmitButton: false,
+    latitude: "",
+    longitude: ""
   };
 
   componentDidMount() {
-    if(!!this.props.match.params.response) {
-      const response = this.props.match.params.response
-      if(response == 'success') {
-        this.setState({showSubmitButton: true})
+    console.log(window.location.href)
+    if(window.location.href.includes("response")) {
+      let shiftData = localStorage.getItem('shiftData');
+      if(!!shiftData) {
+        this.setState(JSON.parse(shiftData))
+        // localStorage.removeItem('shiftData')
+      }
+      if(window.location.href.includes("success")) {
+        alert("Your shift has been funded")
+        this.setState({showSubmitButton: true, showFundShift: false})
       } else {
         alert('Payment failed. Please try again')
       }
@@ -38,12 +47,23 @@ export class CreateJob extends Component {
       dep: this.state.dep,
       cost: this.state.cost,
       type: "Vacant",
-      uid: this.props.auth.uid
+      uid: this.props.auth.uid,
+      latitude: this.state.latitude,
+      longitude: this.state.longitude
     };
     console.log(itemAdd);
-    this.props.firestore.add({ collection: "jobs" }, itemAdd);
+    // this.props.firestore.add({ collection: "jobs" }, itemAdd);
 
-    this.props.history.push("/jobboard");
+    fetch(`${Strings.BASE_URL}/saveJob`, {
+      method: 'POST',
+      body: JSON.stringify(itemAdd),
+    }).then(response => {
+      console.log(response)
+      this.props.history.push("/jobboard");
+    }).catch(err => {
+      console.error(err);
+    });
+
   };
 
   onFund = e => {
@@ -58,10 +78,11 @@ export class CreateJob extends Component {
     // Url to Firebase function
     fetch('https://us-central1-staffa-13e8a.cloudfunctions.net/createCheckoutSession/', {
       method: 'POST',
-      body: JSON.stringify(orderData)
+      body: JSON.stringify(orderData),
       }).then(response => {
         return response.json();
       }).then(data => {
+        localStorage.setItem('shiftData', JSON.stringify(this.state));
         // Redirecting to payment form page
         stripe.redirectToCheckout({
           sessionId: data.sessionId
@@ -80,6 +101,23 @@ export class CreateJob extends Component {
   handleStateUpdate = () => {
     const showFundShift = !!this.state.name && !!this.state.cost
     this.setState({ showFundShift })
+  }
+
+  useCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      position => this.setState({ 
+        latitude: position.coords.latitude, 
+        longitude: position.coords.longitude
+      }), 
+      err => alert("Please share your location")
+    );
+  }
+
+  useSavedLocation = () => {
+    this.setState({ 
+      latitude: this.props.profile.latitude, 
+      longitude: this.props.profile.longitude
+    })
   }
 
   render() {
@@ -106,6 +144,7 @@ export class CreateJob extends Component {
                 id="jobNo"
                 onChange={this.handleChange}
                 placeholder="Type Job Number"
+                value={this.state.jobNo}
               />
             </div>
             <div className="form-group">
@@ -117,8 +156,20 @@ export class CreateJob extends Component {
                 id="name"
                 onChange={this.handleChange}
                 placeholder="Type Name"
+                value={this.state.name}
               />
             </div>
+
+            <div className="form-group">
+              <label htmlFor="Name">Location:</label>
+              <button onClick={this.useCurrentLocation} className="btn btn-success" style={{marginLeft: '10px', marginRight: '10px'}}>
+                Use Current Location
+              </button>
+              <button onClick={this.useSavedLocation} className="btn btn-success" style={{marginRight: '10px'}}>
+                Use Saved Location
+              </button>
+            </div>
+
             <div className="form-group">
               <label htmlFor="Site">Site:</label>
               <input
@@ -128,6 +179,7 @@ export class CreateJob extends Component {
                 id="site"
                 onChange={this.handleChange}
                 placeholder="Type Site"
+                value={this.state.site}
               />
             </div>
             <div className="form-group">
@@ -139,6 +191,7 @@ export class CreateJob extends Component {
                 id="dep"
                 onChange={this.handleChange}
                 placeholder="Type Department Name"
+                value={this.state.dep}
               />
             </div>
             <div className="form-group">
@@ -150,6 +203,7 @@ export class CreateJob extends Component {
                 id="cost"
                 onChange={this.handleChange}
                 placeholder="Type Cost"
+                value={this.state.cost}
               />
             </div>
             {

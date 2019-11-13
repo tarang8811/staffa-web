@@ -13,8 +13,21 @@ class SignUp extends Component {
     isSingleDep: "true",
     accountName: "",
     orgType: "",
-    type: "agency"
+    type: "agency",
+    latitude: "",
+    longitude: ""
   };
+
+  componentDidMount() {
+    navigator.geolocation.getCurrentPosition(
+      position => this.setState({ 
+        latitude: position.coords.latitude, 
+        longitude: position.coords.longitude
+      }), 
+      err => alert("Please share your location")
+    );
+  }
+  
   handleChange = e => {
     this.setState({
       [e.target.name]: e.target.value

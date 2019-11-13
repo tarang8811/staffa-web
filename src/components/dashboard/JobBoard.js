@@ -19,11 +19,12 @@ class JobBoard extends Component {
   render() {
     const { auth } = this.props;
     if (!auth.uid) return <Redirect to="/signin" />;
-    const { jobs } = this.props;
+    let { jobs } = this.props;
     let vacantSize = 0;
     let filledSize = 0;
     let unfilledSize = 0;
     if (jobs) {
+      jobs = jobs.map(j => j.d)
       let vacant = jobs.filter(job => job.type === "Vacant");
       let filled = jobs.filter(job => job.type === "Filled");
       let unfilled = jobs.filter(job => job.type === "Unfilled");

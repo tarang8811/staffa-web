@@ -10,5 +10,7 @@ const Strings = {
   FS_COLLECTION_CONVERSATION: "Conversations",
   FS_COLLECTION_MESSAGES: "Messages",
 
+  BASE_URL: "https://us-central1-staffa-13e8a.cloudfunctions.net"
+
 };
 export default Strings;

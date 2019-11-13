@@ -9,7 +9,10 @@ export class Jobs extends Component {
   render() {
     const { auth } = this.props;
     if (!auth.uid) return <Redirect to="/signin" />;
-    const { jobs, selectedTable } = this.props;
+    let { jobs, selectedTable } = this.props;
+    if(jobs){
+      jobs = jobs.map(j => j.d)
+    }
 
     if (jobs) {
       return (
