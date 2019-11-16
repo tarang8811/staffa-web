@@ -29,6 +29,7 @@ export class Jobs extends Component {
                     <th>Discription</th>
                     <th>Manager</th>
                     <th>Cost</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -45,6 +46,7 @@ export class Jobs extends Component {
                         <td>{job.name}</td>
                         <td>{}</td>
                         <td>{job.cost}</td>
+                        <td>{job.date}</td>
                       </tr>
                     ))}
                 </tbody>

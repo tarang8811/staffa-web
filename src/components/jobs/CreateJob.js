@@ -4,9 +4,41 @@ import { Redirect, Link } from "react-router-dom";
 import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
 import Strings from '../../utilities/Strings'
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { Dropdown, Icon } from 'semantic-ui-react'
+import 'semantic-ui-css/semantic.min.css'
 
 const stripe =    window.Stripe('pk_test_hXktgS5TKCYejAlnTAaoG7ms00PukUgrpb');
 
+const Timeslots = [
+  "00:00",
+  "1:00",  
+  "2:00",  
+  "3:00",  
+  "4:00",  
+  "5:00", 
+  "6:00", 
+  "7:00", 
+  "8:00", 
+  "9:00", 
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
+  "21:00",
+  "22:00",
+  "23:00",
+]
+
+const options = Timeslots.map(d => {return {key: d, text: d, value: d}})
 export class CreateJob extends Component {
   state = {
     jobNo: "",
@@ -15,9 +47,31 @@ export class CreateJob extends Component {
     dep: "",
     cost: "",
     showFundShift: false,
-    showSubmitButton: false,
+    showSubmitButton: true,
     latitude: "",
-    longitude: ""
+    longitude: "",
+    startDate: new Date(),
+    slots: {},
+    currentSlot: []
+  };
+
+  formatDate = (d) => {
+    var month = '' + (d.getMonth() + 1);
+    var day = '' + d.getDate();
+    var year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+  handleDateChange = date => {
+    this.setState({
+      startDate: date,
+    });
   };
 
   componentDidMount() {
@@ -49,21 +103,23 @@ export class CreateJob extends Component {
       type: "Vacant",
       uid: this.props.auth.uid,
       latitude: this.state.latitude,
-      longitude: this.state.longitude
+      longitude: this.state.longitude,
+      slots: this.state.slots
     };
     console.log(itemAdd);
     // this.props.firestore.add({ collection: "jobs" }, itemAdd);
 
-    fetch(`${Strings.BASE_URL}/saveJob`, {
+    fetch(`${Strings.BASE_URL}/saveJobs`, {
       method: 'POST',
       body: JSON.stringify(itemAdd),
     }).then(response => {
       console.log(response)
-      this.props.history.push("/jobboard");
+      setTimeout(() => {
+        this.props.history.push("/jobboard");
+      }, 2000)
     }).catch(err => {
       console.error(err);
     });
-
   };
 
   onFund = e => {
@@ -120,8 +176,28 @@ export class CreateJob extends Component {
     })
   }
 
+  onDropdownChange = (event, { value }) => {
+    this.setState({
+      currentSlot: value
+    })
+  }
+
+  onAddSlot = () => {
+    const formattedDate = this.formatDate(this.state.startDate)
+    this.setState({
+      slots: {...this.state.slots, [formattedDate]: this.state.currentSlot}
+    })
+  }
+
+  removeSlot = (k) => () => {
+    let slots = {...this.state.slots}
+    delete slots[k]
+    this.setState({ slots })
+  }
+
   render() {
     const { auth } = this.props;
+
     if (!auth.uid) return <Redirect to="/signin" />;
     return (
       <div className="container">
@@ -147,7 +223,7 @@ export class CreateJob extends Component {
                 value={this.state.jobNo}
               />
             </div>
-            <div className="form-group">
+            <div className="form-group" >
               <label htmlFor="Name">Name:</label>
               <input
                 type="text"
@@ -159,8 +235,39 @@ export class CreateJob extends Component {
                 value={this.state.name}
               />
             </div>
-
             <div className="form-group">
+              <label htmlFor="date" style={{ display: 'block'}}>Date & Time Slots:</label>
+              <DatePicker selected={this.state.startDate} onChange={this.handleDateChange} className={{width: '100%'}}/>
+              <Dropdown 
+                placeholder='Time Slots' 
+                fluid multiple selection 
+                options={options} style={{width: '50%', display: 'inline-block', marginLeft: '20px'}}
+                onChange={this.onDropdownChange}
+                value={this.state.currentSlot}
+              />
+              {
+                !!this.state.currentSlot.length &&
+                <button onClick={this.onAddSlot} className="btn btn-success" style={{marginLeft: '10px'}}>
+                  Add
+                </button>
+              }
+            </div>
+            <div style={{marginTop: '10px', marginBottom: '10px'}}>
+              {
+                Object.keys(this.state.slots).map(k => {
+                  const slots = this.state.slots[k].map(s => {
+                    return <p style={{display: 'inline-block', marginLeft: '5px', marginRight: '5px', background: '#e8e8e8', padding: '4px 10px'}}>{s}</p>
+                  })
+                  return <div style={{padding: '0 10px', borderWidth: '1px', borderColor: '#e8e8e8'}}>
+                    <p style={{display: 'inline-block'}}>Date: {k}</p>
+                    <p style={{display: 'inline-block', marginLeft: '10px'}}>Slots</p>
+                    {slots}
+                    <Icon name='close' link onClick={this.removeSlot(k)}/>
+                    </div>
+                })
+              }
+            </div>
+            <div className="form-group" style={{marginTop: '20px'}}>
               <label htmlFor="Name">Location:</label>
               <button onClick={this.useCurrentLocation} className="btn btn-success" style={{marginLeft: '10px', marginRight: '10px'}}>
                 Use Current Location
