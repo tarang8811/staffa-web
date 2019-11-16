@@ -31,16 +31,6 @@ export const isUserConversationExist = (userID, callBack) => {
     });
 }
 
-export const getUserConversationNode = (userID, chatUID) => {
-  var users = firebaseApp
-    .firestore()
-    .collection(Strings.FS_COLLECTION_USER_CONVERSATION);
-  var userDoc = users.doc(userID);
-  userDoc.set({set: true});
-  var conversation = userDoc.collection(Strings.FS_COLLECTION_CONVERSATION);
-  return conversation.doc(chatUID);
-}
-
 export const getUserData = (userID, callBack) => {
   var users = firebaseApp.firestore().collection(Strings.FS_COLLECTION_USERS);
   var userDoc = users.doc(userID);
@@ -68,5 +58,56 @@ export const getChatUID = (uid1, uid2, topicName) => {
   } else {
     return uid2 + uid1 + '%' + topicName.toLowerCase();
   }
+}
+
+export const setNewConversation = (userID, receiverID, chatUID, topicName) => {
+  // Entry to Sender Conversation collection
+  var chatDoc = getUserConversationNode(userID, chatUID);
+  var data = {
+    topicName: topicName,
+    receiverID: receiverID,
+    senderID: userID,
+    lastMessageID: '',
+  };
+  chatDoc.set(data);
+
+  // Entry to Receiver Conversation collection
+  chatDoc = getUserConversationNode(receiverID, chatUID);
+  data = {
+    topicName: topicName,
+    receiverID: userID,
+    senderID: receiverID,
+    lastMessageID: '',
+  };
+  chatDoc.set(data);
+}
+
+export const addNewTopicNode = (topicName, chatUID) => {
+  var chatUIDDoc = getConversationNode(chatUID);
+  chatUIDDoc.set({topicName: topicName});
+}
+
+export const isTopicExist = (chatUID, callBack) => {
+  var conversationNode = getConversationNode(chatUID);
+  conversationNode.get().then(querySnapshot => {
+    callBack(querySnapshot.exists);
+  });
+}
+
+export const getUserConversationNode = (userID, chatUID) => {
+  var users = firebaseApp
+    .firestore()
+    .collection(Strings.FS_COLLECTION_USER_CONVERSATION);
+  var userDoc = users.doc(userID);
+  userDoc.set({set: true});
+  var conversation = userDoc.collection(Strings.FS_COLLECTION_CONVERSATION);
+  return conversation.doc(chatUID);
+}
+
+export const getConversationNode = (chatUID) => {
+  var users = firebaseApp
+    .firestore()
+    .collection(Strings.FS_COLLECTION_CONVERSATION);
+  return users.doc(chatUID);
 }
 

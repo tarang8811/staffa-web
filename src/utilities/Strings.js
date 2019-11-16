@@ -9,6 +9,7 @@ const Strings = {
   FS_COLLECTION_USER_CONVERSATION: "UserConversation",
   FS_COLLECTION_CONVERSATION: "Conversations",
   FS_COLLECTION_MESSAGES: "Messages",
+  FS_COLLECTION_BIDS: "Bids",
 
   BASE_URL: "https://us-central1-staffa-13e8a.cloudfunctions.net"
 

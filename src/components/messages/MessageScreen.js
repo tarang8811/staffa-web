@@ -16,9 +16,11 @@ class MessageScreen extends Component {
         super(props)
         this.state = {
             isLoading: true,
-            currentPeerUser: null,
+            currentPeerUser: !!props.location.state && !!props.location.state.freelancer 
+              ? props.location.state.freelancer : null,
             users: [],
-            topicName: ''
+            topicName: !!props.location.state && !!props.location.state.topicName ?
+              props.location.state.topicName: ''
         }
         this.currentUserId = props.auth.uid
         // this.currentUserAvatar = localStorage.getItem(AppString.PHOTO_URL)

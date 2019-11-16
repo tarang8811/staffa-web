@@ -15,7 +15,9 @@ const images = {
     mimi6: require('../../images/mimi6.gif'),
     mimi7: require('../../images/mimi7.gif'),
     mimi8: require('../../images/mimi8.gif'),
-    mimi9: require('../../images/mimi9.gif')
+    mimi9: require('../../images/mimi9.gif'),
+
+    back: require('../../images/back.png'),
 }
 
 export default images
