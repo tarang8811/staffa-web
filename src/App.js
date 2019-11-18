@@ -22,7 +22,8 @@ import ShowSite from "./components/sites/ShowSite";
 import Sites from "./components/sites/Sites";
 import Messages  from "./components/messages/MessageScreen"
 import Settings  from "./components/settings/SettingsScreen"
-
+import Tax from './components/tax/Tax'
+import Fees from './components/fees/Fees'
 
 class App extends Component {
   render() {
@@ -44,6 +45,8 @@ class App extends Component {
             <Route path="/deps" component={Deps} />
             <Route path="/sites" component={Sites} />
             <Route path="/adduser" component={AddUser} />
+            <Route path="/tax" component={Tax} />
+            <Route path="/fees" component={Fees} />
 
             <Route path="/addsite" component={AddSite} />
             <Route path="/showsite/:id" component={ShowSite} />

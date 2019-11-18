@@ -46,6 +46,12 @@ const SignedInLinks = props => {
           <NavLink to="/create">New Project</NavLink>
         </li>
         <li>
+          <NavLink to="/tax">Tax</NavLink>
+        </li>
+        <li>
+          <NavLink to="/fees">Fees</NavLink>
+        </li>
+        <li>
           <NavLink to="/messages">Messages</NavLink>
         </li>
         <li>

@@ -47,7 +47,7 @@ export class CreateJob extends Component {
     dep: "",
     cost: "",
     showFundShift: false,
-    showSubmitButton: true,
+    showSubmitButton: false,
     latitude: "",
     longitude: "",
     startDate: new Date(),
@@ -73,23 +73,6 @@ export class CreateJob extends Component {
       startDate: date,
     });
   };
-
-  componentDidMount() {
-    console.log(window.location.href)
-    if(window.location.href.includes("response")) {
-      let shiftData = localStorage.getItem('shiftData');
-      if(!!shiftData) {
-        this.setState(JSON.parse(shiftData))
-        // localStorage.removeItem('shiftData')
-      }
-      if(window.location.href.includes("success")) {
-        alert("Your shift has been funded")
-        this.setState({showSubmitButton: true, showFundShift: false})
-      } else {
-        alert('Payment failed. Please try again')
-      }
-    }
-  }
 
   onSubmit = e => {
     e.preventDefault();
@@ -129,8 +112,15 @@ export class CreateJob extends Component {
   };
 
   handleStateUpdate = () => {
-    const showFundShift = !!this.state.name && !!this.state.cost
-    this.setState({ showFundShift })
+    const showSubmitButton = !!this.state.jobNo && 
+      !!this.state.name && 
+      !!this.state.site && 
+      !!this.state.dep && 
+      !!this.state.cost && 
+      !!this.state.latitude &&
+      !!this.state.longitude &&
+      !!Object.keys(this.state.slots).length
+    this.setState({ showSubmitButton })
   }
 
   useCurrentLocation = () => {
@@ -138,7 +128,7 @@ export class CreateJob extends Component {
       position => this.setState({ 
         latitude: position.coords.latitude, 
         longitude: position.coords.longitude
-      }), 
+      }, this.handleStateUpdate), 
       err => alert("Please share your location")
     );
   }
@@ -147,7 +137,7 @@ export class CreateJob extends Component {
     this.setState({ 
       latitude: Number(this.props.profile.latitude), 
       longitude: Number(this.props.profile.longitude)
-    })
+    }, this.handleStateUpdate)
   }
 
   onDropdownChange = (event, { value }) => {
@@ -159,14 +149,14 @@ export class CreateJob extends Component {
   onAddSlot = () => {
     const formattedDate = this.formatDate(this.state.startDate)
     this.setState({
-      slots: {...this.state.slots, [formattedDate]: this.state.currentSlot}
-    })
+      slots: {[formattedDate]: this.state.currentSlot, ...this.state.slots}
+    }, this.handleStateUpdate)
   }
 
   removeSlot = (k) => () => {
     let slots = {...this.state.slots}
     delete slots[k]
-    this.setState({ slots })
+    this.setState({ slots }, this.handleStateUpdate)
   }
 
   render() {
@@ -317,9 +307,10 @@ const mapStateToProps = (state, ownProps) => {
 
 export default compose(
   connect(mapStateToProps),
-  firestoreConnect([
+  firestoreConnect(props => [
     {
-      collection: "jobs"
+      collection: "jobs",
+      where: ["d.uid", "==", props.auth.uid]
     }
   ])
 )(CreateJob);

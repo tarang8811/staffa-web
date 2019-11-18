@@ -66,7 +66,9 @@ const JobTable = ({jobs, selectedTable, onShowBids}) => {
   )
 }
 
-const BidsTable = ({bids, onShowJobs, onMessage, onHire, currentJob}) => {
+const BidsTable = ({
+  bids, onShowJobs, onMessage, onHire, currentJob, onApprovePayment
+}) => {
   return (
     <div className="card-panel ">
       <div className="card-content black-text">
@@ -108,6 +110,14 @@ const BidsTable = ({bids, onShowJobs, onMessage, onHire, currentJob}) => {
                       <td>
                         <button onClick={onHire(bid)} className="btn btn-success">
                           Hire
+                        </button>
+                      </td>
+                    } 
+                    {
+                      currentJob.type === "Filled" && !currentJob.completed &&
+                      <td>
+                        <button onClick={onApprovePayment(bid)} className="btn btn-success">
+                         Approve Payment
                         </button>
                       </td>
                     }       
@@ -165,8 +175,42 @@ export class Jobs extends Component {
         }
       });
     })
+  }
 
-    
+  formatDate = (d) => {
+    var month = '' + (d.getMonth() + 1);
+    var day = '' + d.getDate();
+    var year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+  onApprovePayment = (bid) => () => {
+    const jobData = {
+      ...this.state.currentJob,
+      coordinates: new firebase.firestore.GeoPoint(this.state.currentJob.coordinates._lat, this.state.currentJob.coordinates._long),
+      type: "Filled",
+      completed: true
+    }
+    this.props.firestore.update({ collection: "jobs", doc: this.state.currentJob.id }, {d: jobData});
+    alert("The payment has been approved")
+
+    let paymentData = {
+      amount: bid.price * bid.times.length,
+      freelancerName: bid.freelancerName,
+      agencyName: `${this.props.profile.firstName} ${this.props.profile.lastName}`,
+      date: this.formatDate(new Date()),
+      status: 'PENDING',
+      freelancerId: bid.uid,
+      agencyId: this.props.auth.uid
+    }
+
+    this.props.firestore.add({ collection: "payments" }, paymentData);
   }
 
   onHire = (bid) => () => {
@@ -213,6 +257,7 @@ export class Jobs extends Component {
         onMessage={this.onMessage}
         onHire={this.onHire}
         currentJob={this.state.currentJob}
+        onApprovePayment={this.onApprovePayment}
       />
     }
 
@@ -223,15 +268,17 @@ export class Jobs extends Component {
 const mapStateToProps = (state, ownProps) => {
   return {
     jobs: state.firestore.ordered.jobs,
-    auth: state.firebase.auth
+    auth: state.firebase.auth,
+    profile: state.firebase.profile
   };
 };
 
 export default compose(
   connect(mapStateToProps),
-  firestoreConnect([
+  firestoreConnect(props => [
     {
-      collection: "jobs"
+      collection: "jobs",
+      where: ["d.uid", "==", props.auth.uid]
     }
   ])
 )(Jobs);
