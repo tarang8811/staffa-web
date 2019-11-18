@@ -9,7 +9,7 @@ import images from '../Themes/Images'
 import { 
   getChatUID, isTopicExist, addNewTopicNode, setNewConversation, getUserData 
 } from '../../store/messageApi/messagesApi'
-
+import firebase from '../../config/fbConfig'
 
 const JobTable = ({jobs, selectedTable, onShowBids}) => {
   return (
@@ -46,9 +46,15 @@ const JobTable = ({jobs, selectedTable, onShowBids}) => {
                     <td>{job.cost}</td>
                     <td>{job.date}</td>
                     <td>
-                      <button onClick={onShowBids(job)} className="btn btn-success" style={{marginLeft: '10px'}}>
-                        Show bids
-                      </button>
+                      {
+                        job.type === "Vacant" ?
+                        <button onClick={onShowBids(job)} className="btn btn-success" style={{marginLeft: '10px'}}>
+                          Show bids
+                        </button> :
+                        <button onClick={onShowBids(job)} className="btn btn-success" style={{marginLeft: '10px'}}>
+                          Show Hires
+                        </button>
+                      }
                     </td>
                   </tr>
                 ))}
@@ -60,7 +66,7 @@ const JobTable = ({jobs, selectedTable, onShowBids}) => {
   )
 }
 
-const BidsTable = ({bids, onShowJobs, onMessage, onHire}) => {
+const BidsTable = ({bids, onShowJobs, onMessage, onHire, currentJob}) => {
   return (
     <div className="card-panel ">
       <div className="card-content black-text">
@@ -79,7 +85,9 @@ const BidsTable = ({bids, onShowJobs, onMessage, onHire}) => {
                 <th>Freelancer Name</th>
                 <th>Times</th>
                 <th></th>
-                <th></th>
+                {currentJob.type === "Vacant" &&
+                  <th></th>
+                }
               </tr>
             </thead>
             <tbody>
@@ -88,18 +96,21 @@ const BidsTable = ({bids, onShowJobs, onMessage, onHire}) => {
                   <tr key={bid.id} className="hoverable">
                     <td>{bid.date}</td>
                     <td>{bid.price}</td>
-                    <td>{bid.name}</td>
+                    <td>{bid.freelancerName}</td>
                     <td>{bid.times.join(", ")}</td>
                     <td>
                       <button onClick={onMessage(bid)} className="btn btn-success">
                         Message
                       </button>
                     </td>
-                    <td>
-                      <button onClick={onHire(bid)} className="btn btn-success">
-                        Hire
-                      </button>
-                    </td>
+                    {
+                      currentJob.type === "Vacant" &&
+                      <td>
+                        <button onClick={onHire(bid)} className="btn btn-success">
+                          Hire
+                        </button>
+                      </td>
+                    }       
                   </tr>
                 ))}
             </tbody>
@@ -159,7 +170,18 @@ export class Jobs extends Component {
   }
 
   onHire = (bid) => () => {
-
+    const jobData = {
+      ...this.state.currentJob,
+      coordinates: new firebase.firestore.GeoPoint(this.state.currentJob.coordinates._lat, this.state.currentJob.coordinates._long),
+      type: "Filled"
+    }
+    const bidData = {
+      ...bid,
+      approved: true
+    }
+    this.props.firestore.update({ collection: "jobs", doc: this.state.currentJob.id }, {d: jobData});
+    this.props.firestore.update({ collection: "Bids", doc: bid.id }, bidData);
+    this.props.handleClick("Filled")
   }
 
   render() {
@@ -167,7 +189,12 @@ export class Jobs extends Component {
     if (!auth.uid) return <Redirect to="/signin" />;
     let { jobs, selectedTable } = this.props;
     if(jobs){
-      jobs = jobs.map(j => j.d)
+      jobs = jobs.map(j => {
+        return {
+          ...j.d,
+          id: j.id
+        }
+      })
     }
 
     if (jobs && !this.state.showBids) {
@@ -180,10 +207,12 @@ export class Jobs extends Component {
 
     if(this.state.showBids) {
       return <BidsTable 
-        bids={this.state.bids} 
+        bids={this.state.currentJob.type === "Vacant" 
+          ? this.state.bids : this.state.bids.filter(b => b.approved)} 
         onShowJobs={this.onShowJobs}
         onMessage={this.onMessage}
         onHire={this.onHire}
+        currentJob={this.state.currentJob}
       />
     }
 

@@ -21,6 +21,7 @@ import EditSite from "./components/sites/EditSite";
 import ShowSite from "./components/sites/ShowSite";
 import Sites from "./components/sites/Sites";
 import Messages  from "./components/messages/MessageScreen"
+import Settings  from "./components/settings/SettingsScreen"
 
 
 class App extends Component {
@@ -37,6 +38,7 @@ class App extends Component {
             <Route path="/create" component={CreateProject} />
             <Route path="/jobboard" component={JobBoard} />
             <Route path="/messages" component={Messages} />
+            <Route path="/settings" component={Settings} />
             <Route path="/createjob" component={CreateJob} />
             <Route path="/users" component={Users} />
             <Route path="/deps" component={Deps} />

@@ -69,7 +69,11 @@ class JobBoard extends Component {
             </thead>
           </table>
         </div>
-        <Jobs selectedTable={this.state.selectedTable} history={this.props.history}/>
+        <Jobs 
+          selectedTable={this.state.selectedTable} 
+          history={this.props.history} 
+          handleClick={this.handleClick}
+        />
       </div>
     );
   }

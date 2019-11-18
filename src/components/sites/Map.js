@@ -9,29 +9,17 @@ import {
 } from "react-google-maps";
 
 const Map = compose(
-  withStateHandlers(
-    () => ({
-      isMarkerShown: false,
-      markerPosition: null
-    }),
-    {
-      onMapClick: ({ isMarkerShown }) => e => ({
-        markerPosition: e.latLng,
-        isMarkerShown: true
-      })
-    }
-  ),
   withScriptjs,
   withGoogleMap
-)(props => (
-  <GoogleMap
-    defaultZoom={8}
-    defaultCenter={{ lat: -34.397, lng: 70.644 }}
-    onClick={props.onMapClick}
+)(props => {
+  console.log('props is', props)
+  return <GoogleMap
+    zoom={12}
+    center={props.markerPosition || { lat: -34.397, lng: 70.644 }}
   >
-    {props.isMarkerShown && <Marker position={props.markerPosition} />}
+    {!!props.isMarkerShown && <Marker position={props.markerPosition} />}
   </GoogleMap>
-));
+});
 
 export class Maps extends React.Component {
   constructor(props) {
@@ -46,6 +34,8 @@ export class Maps extends React.Component {
           loadingElement={<div style={{ height: `100%` }} />}
           containerElement={<div style={{ height: `400px` }} />}
           mapElement={<div style={{ height: `100%` }} />}
+          isMarkerShown={this.props.isMarkerShown}
+          markerPosition={this.props.markerPosition}
         />
       </div>
     );

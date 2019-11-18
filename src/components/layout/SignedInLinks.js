@@ -2,8 +2,28 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import { signOut } from "../../store/actions/authActions";
+import { Dropdown } from 'semantic-ui-react'
 
 const SignedInLinks = props => {
+
+  const options = [
+    {
+      key: 'user',
+      text: (
+        <span>
+          Signed in as <strong>{props.profile.firstName + " " + props.profile.lastName}</strong>
+        </span>
+      ),
+      disabled: true,
+    },
+    { key: 'settings', text: (
+      <NavLink style={{color: 'black'}} to="/settings">Settings</NavLink>
+    ) },
+    { key: 'log-out', text: (
+      <a style={{color: 'black'}} onClick={props.signOut}>Log Out</a>
+      ) },
+  ]
+
   return (
     <div>
       <ul className="right">
@@ -29,12 +49,14 @@ const SignedInLinks = props => {
           <NavLink to="/messages">Messages</NavLink>
         </li>
         <li>
-          <a onClick={props.signOut}>Log Out</a>
-        </li>
-        <li>
-          <NavLink to="/" className="btn btn-floating blue lighten-1">
-            {props.profile.initials}
-          </NavLink>
+          <Dropdown 
+            trigger={
+              <div className="btn btn-floating blue lighten-1">
+                {props.profile.initials}
+              </div>
+            }
+            options={options}
+          />
         </li>
       </ul>
     </div>

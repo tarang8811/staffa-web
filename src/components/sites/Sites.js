@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
 import { Redirect, Link } from "react-router-dom";
-import { Maps } from "./Map";
+
 
 export class Sites extends Component {
   render() {
@@ -53,10 +53,6 @@ export class Sites extends Component {
                 </table>
               </div>
             </div>
-          </div>
-
-          <div>
-            <Maps />
           </div>
         </div>
       );

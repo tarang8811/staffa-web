@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
 import { Redirect, Link } from "react-router-dom";
+import Strings from '../../utilities/Strings'
 
 export class Users extends Component {
   render() {
@@ -62,7 +63,7 @@ const mapStateToProps = (state, ownProps) => {
   console.log(state);
 
   return {
-    users: state.firestore.ordered.users,
+    users: state.firestore.ordered.Users,
     auth: state.firebase.auth
   };
 };
@@ -71,7 +72,7 @@ export default compose(
   connect(mapStateToProps),
   firestoreConnect(props => [
     {
-      collection: "users",
+      collection: Strings.FS_COLLECTION_USERS,
       where: ["uid", "==", props.auth.uid]
     }
   ])

@@ -8,8 +8,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Dropdown, Icon } from 'semantic-ui-react'
 import 'semantic-ui-css/semantic.min.css'
+import { Maps } from "../sites/Map"
 
-const stripe =    window.Stripe('pk_test_hXktgS5TKCYejAlnTAaoG7ms00PukUgrpb');
 
 const Timeslots = [
   "00:00",
@@ -122,32 +122,6 @@ export class CreateJob extends Component {
     });
   };
 
-  onFund = e => {
-    e.preventDefault();
-
-    const orderData = {
-      name: this.state.name,
-      amount: this.state.cost,
-      customerId: this.props.profile.stripe_id
-    }
-
-    // Url to Firebase function
-    fetch('https://us-central1-staffa-13e8a.cloudfunctions.net/createCheckoutSession/', {
-      method: 'POST',
-      body: JSON.stringify(orderData),
-      }).then(response => {
-        return response.json();
-      }).then(data => {
-        localStorage.setItem('shiftData', JSON.stringify(this.state));
-        // Redirecting to payment form page
-        stripe.redirectToCheckout({
-          sessionId: data.sessionId
-        }).then(function (result) {
-          result.error.message
-        });
-      });
-  }
-
   handleChange = e => {
     this.setState({
       [e.target.id]: e.target.value
@@ -171,8 +145,8 @@ export class CreateJob extends Component {
 
   useSavedLocation = () => {
     this.setState({ 
-      latitude: this.props.profile.latitude, 
-      longitude: this.props.profile.longitude
+      latitude: Number(this.props.profile.latitude), 
+      longitude: Number(this.props.profile.longitude)
     })
   }
 
@@ -276,7 +250,12 @@ export class CreateJob extends Component {
                 Use Saved Location
               </button>
             </div>
-
+              {
+                !!this.state.latitude && !!this.state.longitude &&
+                <div style={{margin: '20px 0'}}>
+                <Maps isMarkerShown markerPosition={{lat: this.state.latitude, lng: this.state.longitude}}/>
+                </div>
+              }
             <div className="form-group">
               <label htmlFor="Site">Site:</label>
               <input
@@ -313,12 +292,6 @@ export class CreateJob extends Component {
                 value={this.state.cost}
               />
             </div>
-            {
-              this.state.showFundShift && 
-              <button onClick={this.onFund} className="btn btn-success" style={{marginRight: '10px'}}>
-                Fund Shift
-              </button>
-            }
             {
               this.state.showSubmitButton && 
               <button onClick={this.onSubmit} className="btn btn-success">
