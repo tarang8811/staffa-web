@@ -17,8 +17,8 @@ class Fees extends Component {
   };
 
   render() {
-    const { auth } = this.props;
-    if (!auth.uid) return <Redirect to="/signin" />;
+    const { auth, profile } = this.props;
+    if (!auth.uid || !profile.superAdmin) return <Redirect to="/signin" />;
     let { jobs, payments } = this.props;
     let escrowedSize = 0;
     let pendingSize = 0;
@@ -86,7 +86,8 @@ const mapStateToProps = (state, ownProps) => {
   return {
     jobs: state.firestore.ordered.jobs,
     payments: state.firestore.ordered.payments,
-    auth: state.firebase.auth
+    auth: state.firebase.auth,
+    profile: state.firebase.profile
   };
 };
 
@@ -95,13 +96,9 @@ export default compose(
   firestoreConnect(props => [
     {
       collection: "payments",
-      where: [
-        "agencyId", "==", props.auth.uid
-      ]
     },
     {
       collection: "jobs",
-      where: ["d.uid", "==", props.auth.uid]
     },
   ])
 )(Fees);

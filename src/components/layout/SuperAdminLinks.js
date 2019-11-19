@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { signOut } from "../../store/actions/authActions";
 import { Dropdown } from 'semantic-ui-react'
 
-const SignedInLinks = props => {
+const SuperAdminLinks = props => {
 
   const options = [
     {
@@ -27,27 +27,18 @@ const SignedInLinks = props => {
   return (
     <div>
       <ul className="right">
+      {
+        props.profile.superAdmin && props.profile.tax &&
         <li>
-          <NavLink to="/createjob">Post Shift</NavLink>
+          <NavLink to="/tax">Tax</NavLink>
         </li>
+      }
+      {
+        props.profile.superAdmin && props.profile.fees &&
         <li>
-          <NavLink to="/jobboard">Jobs Board</NavLink>
+          <NavLink to="/fees">Fees</NavLink>
         </li>
-        <li>
-          <NavLink to="/users">Users</NavLink>
-        </li>
-        <li>
-          <NavLink to="/sites">Sites</NavLink>
-        </li>
-        <li>
-          <NavLink to="/deps">Departments</NavLink>
-        </li>
-        <li>
-          <NavLink to="/create">New Project</NavLink>
-        </li>
-        <li>
-          <NavLink to="/messages">Messages</NavLink>
-        </li>
+      }
         <li>
           <Dropdown 
             trigger={
@@ -57,6 +48,11 @@ const SignedInLinks = props => {
             }
             options={options}
           />
+        </li>
+        <li>
+          <NavLink to="/" className="btn btn-floating blue lighten-1">
+            {props.profile.initials}
+          </NavLink>
         </li>
       </ul>
     </div>
@@ -72,4 +68,4 @@ const mapDispatchToProps = dispatch => {
 export default connect(
   null,
   mapDispatchToProps
-)(SignedInLinks);
+)(SuperAdminLinks);

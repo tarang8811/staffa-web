@@ -7,8 +7,8 @@ import { Redirect, Link } from "react-router-dom";
 
 export class Tax extends Component {
   render() {
-    const { auth } = this.props;
-    if (!auth.uid) return <Redirect to="/signin" />;
+    const { auth, profile } = this.props;
+    if (!auth.uid || !profile.superAdmin) return <Redirect to="/signin" />;
     let { payments } = this.props;
 
     if (payments) {
@@ -60,9 +60,6 @@ export default compose(
   firestoreConnect(props => [
     {
       collection: "payments",
-      where: [
-        "agencyId", "==", props.auth.uid
-      ],
       where: [
         "status", "==", "PAID"
       ]

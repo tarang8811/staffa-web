@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import SignedInLinks from "./SignedInLinks";
 import UserSignedInLinks from "./UserSignedInLinks";
 import SignedOutLinks from "./SignedOutLinks";
+import SuperAdminLinks from "./SuperAdminLinks"
 import { connect } from "react-redux";
 
 const Navbar = props => {
@@ -10,7 +11,10 @@ const Navbar = props => {
   console.log(profile);
   let links = null;
   if (auth.uid) {
-    if (profile.isAdmin) {
+    if(profile.superAdmin) {
+      links = <SuperAdminLinks profile={profile} />;
+    }
+    else if (profile.isAdmin) {
       links = <SignedInLinks profile={profile} />;
     } else {
       links = <UserSignedInLinks profile={profile} />;

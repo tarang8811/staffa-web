@@ -61,6 +61,7 @@ const PaymentTable = ({payments, selectedTable}) => {
                 <th>Approved Date</th>
                 <th>Amount</th>
                 <th>Freelancer Name</th>
+                <th>Agency Name</th>
                 <th>Payment Date</th>
               </tr>
             </thead>
@@ -71,6 +72,7 @@ const PaymentTable = ({payments, selectedTable}) => {
                     <td>{payment.date}</td>
                     <td>{payment.amount}</td>
                     <td>{payment.freelancerName}</td>
+                    <td>{payment.agencyName}</td>
                     <td>{payment.paymentDate}</td>
                   </tr>
                 ))}
