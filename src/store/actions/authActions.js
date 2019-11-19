@@ -1,4 +1,5 @@
 import Strings from '../../utilities/Strings'
+import { getUserData } from '../messageApi/messagesApi' 
 
 export const signIn = credentials => {
   return (dispatch, getState, { getFirebase }) => {
@@ -7,8 +8,16 @@ export const signIn = credentials => {
     firebase
       .auth()
       .signInWithEmailAndPassword(credentials.email, credentials.password)
-      .then(() => {
-        dispatch({ type: "LOGIN_SUCCESS" });
+      .then((d) => {
+        getUserData(d.user.uid, (error, response) => {
+          if(!response.registerData) {
+            dispatch({ type: "LOGIN_SUCCESS" });
+          } else {
+            alert('This is a freelancer account. Please login through mobile')
+            firebase.auth().signOut();
+            dispatch({ type: "LOGIN_ERROR", err: 'error' });
+          }
+        })
       })
       .catch(err => {
         console.log(err);
