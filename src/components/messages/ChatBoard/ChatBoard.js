@@ -163,7 +163,7 @@ export default class ChatBoard extends Component {
                 <div className="headerChatBoard">
                     <img
                         className="viewAvatarItem"
-                        src={this.currentPeerUser.bio.profilePicURL}
+                        src={!!this.currentPeerUser.bio ? this.currentPeerUser.bio.profilePicURL : images.ic_default_avatar}
                         alt="icon avatar"
                     />
                     <span className="textHeaderChatBoard">

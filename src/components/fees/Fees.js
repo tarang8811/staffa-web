@@ -30,7 +30,7 @@ class Fees extends Component {
       jobs = jobs.map(j => j.d)
       escrowed = jobs
       pending = payments.filter(p => p.status === "PENDING");
-      paid = payments.filter(p => p.type === "PAID");
+      paid = payments.filter(p => p.status === "PAID");
       escrowedSize = escrowed.length;
       pendingSize = pending.length;
       paidSize = paid.length;
@@ -76,6 +76,7 @@ class Fees extends Component {
           selectedTable={this.state.selectedTable} 
           jobs={jobs}
           payments={this.state.selectedTable === "Pending" ? pending : paid}
+          history={this.props.history}
         />
       </div>
     );

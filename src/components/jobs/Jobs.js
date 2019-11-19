@@ -207,7 +207,8 @@ export class Jobs extends Component {
       date: this.formatDate(new Date()),
       status: 'PENDING',
       freelancerId: bid.uid,
-      agencyId: this.props.auth.uid
+      agencyId: this.props.auth.uid,
+      jobName: this.state.currentJob.name
     }
 
     this.props.firestore.add({ collection: "payments" }, paymentData);

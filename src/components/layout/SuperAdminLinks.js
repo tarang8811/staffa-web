@@ -38,7 +38,11 @@ const SuperAdminLinks = props => {
         <li>
           <NavLink to="/fees">Fees</NavLink>
         </li>
+        
       }
+      <li>
+        <NavLink to="/messages">Messages</NavLink>
+      </li>
         <li>
           <Dropdown 
             trigger={

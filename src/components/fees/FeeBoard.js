@@ -6,8 +6,15 @@ import { compose } from "redux";
 import { Redirect, Link } from "react-router-dom";
 import { getBidsForJobId } from '../../store/bidApi/bidApi'
 import images from '../Themes/Images'
+import {  
+  getUserData,
+  addNewTopicNode,
+  setNewConversation,
+  isTopicExist,
+  getChatUID
+} from '../../store/messageApi/messagesApi'
 
-const JobTable = ({jobs, selectedTable}) => {
+const JobTable = ({jobs, onMessageAgency}) => {
   return (
     <div className="card-panel ">
       <div className="card-content black-text">
@@ -15,14 +22,10 @@ const JobTable = ({jobs, selectedTable}) => {
           <table className="striped hoverable">
             <thead>
               <tr>
-                <th>Job No</th>
-                <th>Site</th>
-                <th>Department</th>
-                <th>Ward</th>
-                <th>Discription</th>
-                <th>Manager</th>
+                <th>Job Name</th>
                 <th>Amount</th>
                 <th>Date</th>
+                <th>Agency Name</th>
                 <th></th>
               </tr>
             </thead>
@@ -30,16 +33,15 @@ const JobTable = ({jobs, selectedTable}) => {
               {jobs
                 .map(job => (
                   <tr key={job.id} className="hoverable">
-                    <td>
-                      <Link to={`/showuser/`}>{job.name}</Link>
-                    </td>
-                    <td>{job.d.site}</td>
-                    <td>{job.d.dep}</td>
-                    <td>{}</td>
                     <td>{job.d.name}</td>
-                    <td>{}</td>
                     <td>{job.d.cost}</td>
                     <td>{job.d.date}</td>
+                    <td>{job.d.agencyName}</td>
+                    <td>
+                      <button onClick={onMessageAgency({agencyId: job.uid, jobName: job.d.name})} className="btn btn-success">
+                      Message Agency
+                      </button>
+                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -50,7 +52,7 @@ const JobTable = ({jobs, selectedTable}) => {
   )
 }
 
-const PaymentTable = ({payments, selectedTable}) => {
+const PaymentTable = ({payments, selectedTable, onMessageAgency, onMessageFreelancer, onApprovePayment}) => {
   return (
     <div className="card-panel ">
       <div className="card-content black-text">
@@ -62,7 +64,16 @@ const PaymentTable = ({payments, selectedTable}) => {
                 <th>Amount</th>
                 <th>Freelancer Name</th>
                 <th>Agency Name</th>
-                <th>Payment Date</th>
+                {
+                  selectedTable === "Paid" &&
+                  <th>Payment Date</th>
+                }
+                <th></th>
+                <th></th>
+                {
+                  selectedTable === "Pending" &&
+                  <th></th>
+                }
               </tr>
             </thead>
             <tbody>
@@ -73,7 +84,28 @@ const PaymentTable = ({payments, selectedTable}) => {
                     <td>{payment.amount}</td>
                     <td>{payment.freelancerName}</td>
                     <td>{payment.agencyName}</td>
-                    <td>{payment.paymentDate}</td>
+                    {
+                      selectedTable === "Paid" &&
+                      <th>{payment.paymentDate}</th>
+                    }
+                    <td>
+                      <button onClick={onMessageAgency(payment)} className="btn btn-success">
+                      Message Agency
+                      </button>
+                    </td>
+                    <td>
+                      <button onClick={onMessageFreelancer(payment)} className="btn btn-success">
+                      Message Freelancer
+                      </button>
+                    </td>
+                    {
+                      selectedTable === "Pending" &&
+                      <td>
+                          <button onClick={onApprovePayment(payment)} className="btn btn-success">
+                        Approve Payment
+                          </button>
+                        </td>
+                    }
                   </tr>
                 ))}
             </tbody>
@@ -89,6 +121,66 @@ export class FeeBoard extends Component {
   state = {
   }
 
+  onMessageAgency = (payment) => () => {
+    getUserData(payment.agencyId, (error, response) => {
+      var chatUID = getChatUID(payment.agencyId, this.props.auth.uid, payment.jobName);
+      response.id = payment.agencyId
+      isTopicExist(chatUID, (exists) => {
+        if (exists) {
+          this.props.history.push({
+            pathname: '/messages',
+            state: {
+              freelancer: response,
+              topicName: payment.jobName
+            }
+          })
+        } else {
+          addNewTopicNode(payment.jobName, chatUID);
+          setNewConversation(this.props.auth.uid, payment.agencyId, chatUID, payment.jobName);
+          this.props.history.push({
+            pathname: '/messages',
+            state: {
+              freelancer: response,
+              topicName: payment.jobName
+            }
+          })
+        }
+      });
+    })
+  }
+
+  onMessageFreelancer = (payment) => () => {
+    getUserData(payment.freelancerId, (error, response) => {
+      var chatUID = getChatUID(payment.freelancerId, this.props.auth.uid, payment.jobName);
+      response.id = payment.freelancerId
+      isTopicExist(chatUID, (exists) => {
+        if (exists) {
+          this.props.history.push({
+            pathname: '/messages',
+            state: {
+              freelancer: response,
+              topicName: payment.jobName
+            }
+          })
+        } else {
+          addNewTopicNode(payment.jobName, chatUID);
+          setNewConversation(this.props.auth.uid, payment.freelancerId, chatUID, payment.jobName);
+          this.props.history.push({
+            pathname: '/messages',
+            state: {
+              freelancer: response,
+              topicName: payment.jobName
+            }
+          })
+        }
+      });
+    })
+  }
+
+  onApprovePayment = (payment) => {
+
+  }
+
 
   render() {
     const { auth } = this.props;
@@ -100,11 +192,15 @@ export class FeeBoard extends Component {
         return <JobTable 
           jobs={jobs} 
           selectedTable={selectedTable}
+          onMessageAgency={this.onMessageAgency}
         />
       } else {
         return <PaymentTable 
           payments={payments} 
-          selectedTable={selectedTable} 
+          selectedTable={selectedTable}
+          onMessageAgency={this.onMessageAgency}
+          onMessageFreelancer={this.onMessageFreelancer}
+          onApprovePayment={this.onApprovePayment} 
         />
       }
     }

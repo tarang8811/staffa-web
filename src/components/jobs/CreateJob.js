@@ -87,7 +87,8 @@ export class CreateJob extends Component {
       uid: this.props.auth.uid,
       latitude: this.state.latitude,
       longitude: this.state.longitude,
-      slots: this.state.slots
+      slots: this.state.slots,
+      agencyName: `${this.props.profile.firstName} ${this.props.profile.lastName}`
     };
     console.log(itemAdd);
     // this.props.firestore.add({ collection: "jobs" }, itemAdd);

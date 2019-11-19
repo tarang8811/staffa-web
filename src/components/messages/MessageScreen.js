@@ -10,6 +10,7 @@ import {
   getUserData,
   getConversationMessagesNode
 } from '../../store/messageApi/messagesApi'
+import images from '../Themes/Images'
 
 class MessageScreen extends Component {
     constructor(props) {
@@ -99,12 +100,12 @@ class MessageScreen extends Component {
                         >
                             <img
                                 className="viewAvatarItem"
-                                src={item.user.bio.profilePicURL}
+                                src={!!item.user.bio ? item.user.bio.profilePic : images.ic_default_avatar}
                                 alt="icon avatar"
                             />
                             <div className="viewWrapContentItem">
                 <span className="textItem">{`Name: ${
-                    item.user.registerData.firstName
+                    !!item.user.registerData ? item.user.registerData.firstName : item.user.firstName
                     }`}</span>
                                 <span className="textItem">{
                                     item.singleMessage && item.singleMessage.message ? item.singleMessage.message : ''
