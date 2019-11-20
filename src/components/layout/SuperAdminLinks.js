@@ -53,11 +53,6 @@ const SuperAdminLinks = props => {
             options={options}
           />
         </li>
-        <li>
-          <NavLink to="/" className="btn btn-floating blue lighten-1">
-            {props.profile.initials}
-          </NavLink>
-        </li>
       </ul>
     </div>
   );

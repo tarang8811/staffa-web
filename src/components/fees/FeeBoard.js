@@ -11,8 +11,19 @@ import {
   addNewTopicNode,
   setNewConversation,
   isTopicExist,
-  getChatUID
+  getChatUID,
+  getUserConversationNode,
+  getConversationMessagesNode
 } from '../../store/messageApi/messagesApi'
+
+const isGreaterThanSevenDays = (date) => {
+  const sevenDaysInMillis = 7 * (86400 * 1000)
+  const myDate = new Date(date)
+  const todayDate = new Date()
+
+  return Math.abs(todayDate - myDate) > sevenDaysInMillis
+}
+
 
 const JobTable = ({jobs, onMessageAgency}) => {
   return (
@@ -80,7 +91,7 @@ const PaymentTable = ({payments, selectedTable, onMessageAgency, onMessageFreela
               {payments
                 .map(payment => (
                   <tr key={payment.id} className="hoverable">
-                    <td>{payment.date}</td>
+                    <td style={isGreaterThanSevenDays(payment.date) ? {color: 'red'} : {}}>{payment.date}</td>
                     <td>{payment.amount}</td>
                     <td>{payment.freelancerName}</td>
                     <td>{payment.agencyName}</td>
@@ -177,8 +188,69 @@ export class FeeBoard extends Component {
     })
   }
 
-  onApprovePayment = (payment) => {
+  onApprovePayment = (payment) => () => {
+    getUserData(payment.freelancerId, (error, response) => {
+      const freelancerData = response
+      fetch('https://us-central1-staffa-13e8a.cloudfunctions.net/approvePayment/', {
+      method: 'POST',
+      body: JSON.stringify({
+        stripe_account: response.stripe_account_id,
+        paymentId: payment.id,
+        amount: payment.amount
+      }),
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        this.sendApprovalMessageAgency(payment)
+        this.sendApprovalMessageFreelancer(payment)
+        alert("Payment has been approved")
+      });
+    })
+  }
 
+  sendMessage = (recieverId, chatUID, payment) => {
+    this.userConversationNode = getUserConversationNode(this.props.auth.uid, chatUID);
+    this.receiverConversationNode = getUserConversationNode(recieverId, chatUID);
+    this.messagesCollection = getConversationMessagesNode(chatUID);
+
+    var message = this.messagesCollection.doc();
+    var data = {
+        message: `The payment has been approved with jobName: ${payment.jobName}, amount: ${payment.amount}`,
+        sender: this.props.auth.uid,
+        receiver: recieverId,
+        time: new Date().toString(),
+    }
+    message.set(data);
+    // Update last message id - sender
+    this.userConversationNode.update({ lastMessageID: message.id });
+    // Update last message id - receiver
+    this.receiverConversationNode.update({ lastMessageID: message.id });
+  }
+
+  sendApprovalMessageFreelancer = (payment) => {
+    var chatUID = getChatUID(payment.freelancerId, this.props.auth.uid, payment.jobName);
+    isTopicExist(chatUID, (exists) => {
+      if (exists) {
+        this.sendMessage(payment.freelancerId, chatUID, payment)
+      } else {
+        addNewTopicNode(payment.jobName, chatUID);
+        setNewConversation(this.props.auth.uid, payment.freelancerId, chatUID, payment.jobName);
+        this.sendMessage(payment.freelancerId, chatUID, payment)
+      }
+    });
+  }
+
+  sendApprovalMessageAgency = (payment) => {
+    var chatUID = getChatUID(payment.agencyId, this.props.auth.uid, payment.jobName);
+    isTopicExist(chatUID, (exists) => {
+      if (exists) {
+        this.sendMessage(payment.agencyId, chatUID, payment)
+      } else {
+        addNewTopicNode(payment.jobName, chatUID);
+        setNewConversation(this.props.auth.uid, payment.agencyId, chatUID, payment.jobName);
+        this.sendMessage(payment.agencyId, chatUID, payment)
+      }
+    });
   }
 
 
