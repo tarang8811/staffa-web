@@ -41,7 +41,7 @@ const Timeslots = [
 const options = Timeslots.map(d => {return {key: d, text: d, value: d}})
 export class CreateJob extends Component {
   state = {
-    jobNo: "",
+    jobNo: Math.floor(100000 + Math.random() * 900000),
     name: "",
     site: "",
     dep: "",
@@ -147,10 +147,20 @@ export class CreateJob extends Component {
     })
   }
 
+  onSiteChange = (event, {value}) => {
+    this.setState({ site: value })
+  }
+
+  onDepChange = (event, {value}) => {
+    this.setState({ dep: value })
+  }
+
+
   onAddSlot = () => {
     const formattedDate = this.formatDate(this.state.startDate)
     this.setState({
-      slots: {[formattedDate]: this.state.currentSlot, ...this.state.slots}
+      slots: {[formattedDate]: this.state.currentSlot, ...this.state.slots},
+      currentSlot: []
     }, this.handleStateUpdate)
   }
 
@@ -162,6 +172,14 @@ export class CreateJob extends Component {
 
   render() {
     const { auth } = this.props;
+
+    const deps = this.props.deps ? this.props.deps.map(d => {
+      return {key: d.depName, value: d.depName, text: d.depName}
+    }) : []
+
+    const sites = this.props.sites ? this.props.sites.map(s => {
+      return {key: s.siteName, value: s.siteName, text: s.siteName}
+    }): []
 
     if (!auth.uid) return <Redirect to="/signin" />;
     return (
@@ -186,6 +204,7 @@ export class CreateJob extends Component {
                 onChange={this.handleChange}
                 placeholder="Type Job Number"
                 value={this.state.jobNo}
+                disabled
               />
             </div>
             <div className="form-group" >
@@ -199,23 +218,6 @@ export class CreateJob extends Component {
                 placeholder="Type Name"
                 value={this.state.name}
               />
-            </div>
-            <div className="form-group">
-              <label htmlFor="date" style={{ display: 'block'}}>Date & Time Slots:</label>
-              <DatePicker selected={this.state.startDate} onChange={this.handleDateChange} className={{width: '100%'}}/>
-              <Dropdown 
-                placeholder='Time Slots' 
-                fluid multiple selection 
-                options={options} style={{width: '50%', display: 'inline-block', marginLeft: '20px'}}
-                onChange={this.onDropdownChange}
-                value={this.state.currentSlot}
-              />
-              {
-                !!this.state.currentSlot.length &&
-                <button onClick={this.onAddSlot} className="btn btn-success" style={{marginLeft: '10px'}}>
-                  Add
-                </button>
-              }
             </div>
             <div style={{marginTop: '10px', marginBottom: '10px'}}>
               {
@@ -232,6 +234,29 @@ export class CreateJob extends Component {
                 })
               }
             </div>
+            <div className="form-group">
+              <label htmlFor="date" style={{ display: 'block'}}>Date & Time Slots:</label>
+              <DatePicker 
+                selected={this.state.startDate} 
+                onChange={this.handleDateChange} 
+                className={{width: '100%'}}
+                minDate={new Date()}
+              />
+              <Dropdown 
+                placeholder='Time Slots' 
+                fluid multiple selection 
+                options={options} style={{width: '50%', display: 'inline-block', marginLeft: '20px'}}
+                onChange={this.onDropdownChange}
+                value={this.state.currentSlot}
+              />
+              {
+                !!this.state.currentSlot.length &&
+                <button onClick={this.onAddSlot} className="btn btn-success" style={{marginLeft: '10px'}}>
+                  Add
+                </button>
+              }
+            </div>
+            
             <div className="form-group" style={{marginTop: '20px'}}>
               <label htmlFor="Name">Location:</label>
               <button onClick={this.useCurrentLocation} className="btn btn-success" style={{marginLeft: '10px', marginRight: '10px'}}>
@@ -249,25 +274,23 @@ export class CreateJob extends Component {
               }
             <div className="form-group">
               <label htmlFor="Site">Site:</label>
-              <input
-                type="text"
-                className="form-control"
-                name="site"
-                id="site"
-                onChange={this.handleChange}
-                placeholder="Type Site"
+              <Dropdown
+                placeholder='Select Site'
+                fluid
+                selection
+                options={sites}
+                onChange={this.onSiteChange}
                 value={this.state.site}
               />
             </div>
             <div className="form-group">
               <label htmlFor="Department">Department:</label>
-              <input
-                type="text"
-                className="form-control"
-                name="dep"
-                id="dep"
-                onChange={this.handleChange}
-                placeholder="Type Department Name"
+              <Dropdown
+                placeholder='Select Department'
+                fluid
+                selection
+                options={deps}
+                onChange={this.onDepChange}
                 value={this.state.dep}
               />
             </div>
@@ -300,7 +323,8 @@ const mapStateToProps = (state, ownProps) => {
   //console.log(state);
 
   return {
-    //deps: state.firestore.data.deps,
+    deps: state.firestore.ordered.deps,
+    sites: state.firestore.ordered.sites,
     auth: state.firebase.auth,
     profile: state.firebase.profile
   };
@@ -310,8 +334,12 @@ export default compose(
   connect(mapStateToProps),
   firestoreConnect(props => [
     {
-      collection: "jobs",
-      where: ["d.uid", "==", props.auth.uid]
+      collection: "deps",
+      where: ["uid", "==", props.auth.uid]
+    },
+    {
+      collection: "sites",
+      where: ["uid", "==", props.auth.uid]
     }
   ])
 )(CreateJob);

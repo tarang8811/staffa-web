@@ -24,6 +24,7 @@ import Messages  from "./components/messages/MessageScreen"
 import Settings  from "./components/settings/SettingsScreen"
 import Tax from './components/tax/Tax'
 import Fees from './components/fees/Fees'
+import MobileApp from './components/mobileApp/MobileApp'
 
 class App extends Component {
   render() {
@@ -47,6 +48,7 @@ class App extends Component {
             <Route path="/adduser" component={AddUser} />
             <Route path="/tax" component={Tax} />
             <Route path="/fees" component={Fees} />
+            <Route path="/mobileApp" component={MobileApp} />
 
             <Route path="/addsite" component={AddSite} />
             <Route path="/showsite/:id" component={ShowSite} />

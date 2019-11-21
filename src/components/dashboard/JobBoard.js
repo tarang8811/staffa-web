@@ -7,14 +7,24 @@ import Jobs from "../jobs/Jobs";
 
 class JobBoard extends Component {
   state = {
-    selectedTable: "Vacant"
+    selectedTable: "Vacant",
+    showBids: false
   };
 
   handleClick = e => {
     this.setState({
-      selectedTable: e
+      selectedTable: e,
+      showBids: false
     });
   };
+
+  onShowBids = () => {
+    this.setState({showBids: true})
+  }
+
+  onShowJobs = () => {
+    this.setState({showBids: false})
+  }
 
   render() {
     const { auth } = this.props;
@@ -25,9 +35,9 @@ class JobBoard extends Component {
     let unfilledSize = 0;
     if (jobs) {
       jobs = jobs.map(j => j.d)
-      let vacant = jobs.filter(job => job.type === "Vacant");
-      let filled = jobs.filter(job => job.type === "Filled");
-      let unfilled = jobs.filter(job => job.type === "Unfilled");
+      let vacant = jobs.filter(job => job.type === "Vacant" && new Date(job.date) >= new Date());
+      let filled = jobs.filter(job => job.type === "Filled" );
+      let unfilled = jobs.filter(job => job.type === "Vacant" && new Date(job.date) < new Date());
       vacantSize = vacant.length;
       filledSize = filled.length;
       unfilledSize = unfilled.length;
@@ -73,6 +83,9 @@ class JobBoard extends Component {
           selectedTable={this.state.selectedTable} 
           history={this.props.history} 
           handleClick={this.handleClick}
+          showBids={this.state.showBids}
+          onShowBids={this.onShowBids}
+          onShowJobs={this.onShowJobs}
         />
       </div>
     );
@@ -88,9 +101,10 @@ const mapStateToProps = (state, ownProps) => {
 
 export default compose(
   connect(mapStateToProps),
-  firestoreConnect([
+  firestoreConnect(props => [
     {
-      collection: "jobs"
+      collection: "jobs",
+      where: ["d.uid", "==", props.auth.uid]
     }
   ])
 )(JobBoard);

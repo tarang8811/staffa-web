@@ -50,19 +50,21 @@ class SettingsScreen extends Component {
     if(window.location.href.includes("response")) {
       let settingsData = localStorage.getItem('settingsData');
       if(!!settingsData) {
-        this.setState(JSON.parse(settingsData))
+        settingsData = JSON.parse(settingsData)
+        this.setState(settingsData)
         localStorage.removeItem('settingsData')
+        if(window.location.href.includes("success")) {
+          alert("Your account has been funded")
+          this.setState({fund: ""})
+          updateBudget({
+            uid: settingsData.uid,
+            budget: Number(settingsData.budget) + Number(settingsData.fund)
+          })
+        } else {
+          alert('Payment failed. Please try again')
+        }
       }
-      if(window.location.href.includes("success")) {
-        alert("Your account has been funded")
-        this.setState({fund: ""})
-        updateBudget({
-          uid: settingsData.uid,
-          budget: Number(settingsData.budget) + Number(settingsData.fund)
-        })
-      } else {
-        alert('Payment failed. Please try again')
-      }
+      
     }
   }
   

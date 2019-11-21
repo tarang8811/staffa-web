@@ -4,14 +4,30 @@ import { connect } from "react-redux";
 import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
 import { Redirect, Link } from "react-router-dom";
+import Budget from './Budget'
 import Strings from '../../utilities/Strings'
 
+
 export class Users extends Component {
+
+  state = {
+    showUser: false,
+    currentUser: {}
+  }
+
+  allocateBudget = (user) => () => {
+    this.setState({ showUser: true, currentUser: user})
+  }
+
+  goBack = () => {
+    this.setState({ showUser: false, currentUser: {}})
+  }
+
   render() {
     const { auth } = this.props;
     if (!auth.uid) return <Redirect to="/signin" />;
     const { users } = this.props;
-    if (users) {
+    if (users && !this.state.showUser) {
       return (
         <div className="container">
           <div className="card-panel ">
@@ -33,6 +49,7 @@ export class Users extends Component {
                       <th>First Name</th>
                       <th>Last Name</th>
                       <th>Email</th>
+                      <th>Allocated Budget</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -45,6 +62,16 @@ export class Users extends Component {
                         </td>
                         <td>{user.lastName}</td>
                         <td>{user.email}</td>
+                        <td>{user.budget || 0}</td>
+                        <td>
+                        {
+                          <td>
+                            <button onClick={this.allocateBudget(user)} className="btn btn-success">
+                              Allocate Budget
+                            </button>
+                          </td>
+                        }  
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -55,6 +82,17 @@ export class Users extends Component {
         </div>
       );
     }
+
+    if(this.state.showUser) {
+      return <Budget 
+        user={this.state.currentUser}
+        goBack={this.goBack}
+        auth={this.props.auth}
+        profile={this.props.profile}
+        firestore={this.props.firestore}
+      />
+    }
+
     return null;
   }
 }
@@ -64,7 +102,8 @@ const mapStateToProps = (state, ownProps) => {
 
   return {
     users: state.firestore.ordered.Users,
-    auth: state.firebase.auth
+    auth: state.firebase.auth,
+    profile: state.firebase.profile
   };
 };
 

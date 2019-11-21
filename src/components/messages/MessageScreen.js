@@ -100,7 +100,7 @@ class MessageScreen extends Component {
                         >
                             <img
                                 className="viewAvatarItem"
-                                src={!!item.user.bio ? item.user.bio.profilePic : images.ic_default_avatar}
+                                src={!!item.user.bio ? item.user.bio.profilePicURL : images.ic_default_avatar}
                                 alt="icon avatar"
                             />
                             <div className="viewWrapContentItem">

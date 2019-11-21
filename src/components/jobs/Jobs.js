@@ -32,7 +32,15 @@ const JobTable = ({jobs, selectedTable, onShowBids}) => {
             </thead>
             <tbody>
               {jobs
-                .filter(job => job.type === selectedTable)
+                .filter(job => {
+                  if(selectedTable === "Vacant") {
+                    return job.type == "Vacant" && new Date(job.date) >= new Date()
+                  } else if(selectedTable === "Filled") {
+                    return job.type == "Filled"
+                  } else if(selectedTable === "Unfilled") {
+                    return job.type == "Vacant" && new Date(job.date) < new Date()
+                  }
+                })
                 .map(job => (
                   <tr key={job.id} className="hoverable">
                     <td>
@@ -47,13 +55,16 @@ const JobTable = ({jobs, selectedTable, onShowBids}) => {
                     <td>{job.date}</td>
                     <td>
                       {
-                        job.type === "Vacant" ?
+                        selectedTable === "Vacant" &&
                         <button onClick={onShowBids(job)} className="btn btn-success" style={{marginLeft: '10px'}}>
                           Show bids
-                        </button> :
+                        </button> 
+                      }
+                      {
+                        selectedTable === "Filled" &&
                         <button onClick={onShowBids(job)} className="btn btn-success" style={{marginLeft: '10px'}}>
                           Show Hires
-                        </button>
+                        </button> 
                       }
                     </td>
                   </tr>
@@ -141,12 +152,14 @@ export class Jobs extends Component {
 
   onShowBids = (job) => () => {
     getBidsForJobId(job.id, (err, data) => {
-      this.setState({showBids: true, bids: data, currentJob: job})
+      this.setState({ bids: data, currentJob: job})
+      this.props.onShowBids()
     })
   }
 
   onShowJobs = () => {
-    this.setState({ showBids: false, bids: [], currentJob: ""})
+    this.setState({ bids: [], currentJob: ""})
+    this.props.onShowJobs()
   }
 
   onMessage = (bid) => () => {
@@ -212,6 +225,7 @@ export class Jobs extends Component {
     }
 
     this.props.firestore.add({ collection: "payments" }, paymentData);
+    this.props.handleClick("Filled")
   }
 
   onHire = (bid) => () => {
@@ -239,10 +253,10 @@ export class Jobs extends Component {
           ...j.d,
           id: j.id
         }
-      })
+      }).sort((a, b) => new Date(a.date) - new Date(b.date))
     }
 
-    if (jobs && !this.state.showBids) {
+    if (jobs && !this.props.showBids) {
       return <JobTable 
         jobs={jobs} 
         selectedTable={selectedTable} 
@@ -250,7 +264,7 @@ export class Jobs extends Component {
       />
     }
 
-    if(this.state.showBids) {
+    if(this.props.showBids) {
       return <BidsTable 
         bids={this.state.currentJob.type === "Vacant" 
           ? this.state.bids : this.state.bids.filter(b => b.approved)} 
@@ -279,7 +293,7 @@ export default compose(
   firestoreConnect(props => [
     {
       collection: "jobs",
-      where: ["d.uid", "==", props.auth.uid]
+      where: ["d.uid", "==", props.auth.uid],
     }
   ])
 )(Jobs);
