@@ -16,6 +16,8 @@ import {
   getConversationMessagesNode
 } from '../../store/messageApi/messagesApi'
 
+import TaxView from './TaxView'
+
 const isGreaterThanSevenDays = (date) => {
   const sevenDaysInMillis = 7 * (86400 * 1000)
   const myDate = new Date(date)
@@ -79,6 +81,14 @@ const PaymentTable = ({payments, selectedTable, onMessageAgency, onMessageFreela
                   selectedTable === "Paid" &&
                   <th>Payment Date</th>
                 }
+                {
+                  selectedTable === "Paid" &&
+                  <th>Tax</th>
+                }
+                {
+                  selectedTable === "Paid" &&
+                  <th>Fees</th>
+                }
                 <th></th>
                 <th></th>
                 {
@@ -98,6 +108,14 @@ const PaymentTable = ({payments, selectedTable, onMessageAgency, onMessageFreela
                     {
                       selectedTable === "Paid" &&
                       <th>{payment.paymentDate}</th>
+                    }
+                    {
+                      selectedTable === "Paid" &&
+                      <th>{payment.tax}</th>
+                    }
+                    {
+                      selectedTable === "Paid" &&
+                      <th>{payment.fees}</th>
                     }
                     <td>
                       <button onClick={onMessageAgency(payment)} className="btn btn-success">
@@ -127,9 +145,12 @@ const PaymentTable = ({payments, selectedTable, onMessageAgency, onMessageFreela
   )
 }
 
+
+
 export class FeeBoard extends Component {
 
   state = {
+    currentPayment: {}
   }
 
   onMessageAgency = (payment) => () => {
@@ -189,23 +210,8 @@ export class FeeBoard extends Component {
   }
 
   onApprovePayment = (payment) => () => {
-    getUserData(payment.freelancerId, (error, response) => {
-      const freelancerData = response
-      fetch('https://us-central1-staffa-13e8a.cloudfunctions.net/approvePayment/', {
-      method: 'POST',
-      body: JSON.stringify({
-        stripe_account: response.stripe_account_id,
-        paymentId: payment.id,
-        amount: payment.amount
-      }),
-      }).then(response => {
-        return response.json();
-      }).then(data => {
-        this.sendApprovalMessageAgency(payment)
-        this.sendApprovalMessageFreelancer(payment)
-        alert("Payment has been approved")
-      });
-    })
+    this.props.onApprovePayment(payment)
+    this.setState({ currentPayment: payment })
   }
 
   sendMessage = (recieverId, chatUID, payment) => {
@@ -253,6 +259,11 @@ export class FeeBoard extends Component {
     });
   }
 
+  goBack = () => {
+    this.setState({currentPayment: {}})
+    this.props.goBack()
+  }
+
 
   render() {
     const { auth } = this.props;
@@ -266,6 +277,14 @@ export class FeeBoard extends Component {
           selectedTable={selectedTable}
           onMessageAgency={this.onMessageAgency}
         />
+      }else if(this.props.selectedTable === "Pending" && this.props.showPayment) {
+        return <TaxView 
+          payment={this.state.currentPayment}
+          sendApprovalMessageAgency={this.sendApprovalMessageAgency}
+          sendApprovalMessageFreelancer={this.sendApprovalMessageFreelancer}
+          firestore={this.props.firestore}
+          goBack={this.goBack}
+        />
       } else {
         return <PaymentTable 
           payments={payments} 
@@ -276,6 +295,8 @@ export class FeeBoard extends Component {
         />
       }
     }
+
+    
     return null;
   }
 }

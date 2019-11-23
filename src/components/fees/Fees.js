@@ -7,14 +7,24 @@ import FeeBoard from "./FeeBoard";
 
 class Fees extends Component {
   state = {
-    selectedTable: "Escrowed"
+    selectedTable: "Escrowed",
+    showPayment: false
   };
 
   handleClick = e => {
     this.setState({
-      selectedTable: e
+      selectedTable: e,
+      showPayment: false
     });
   };
+
+  onApprovePayment = () => {
+    this.setState({showPayment: true})
+  }
+
+  goBack = () => {
+    this.setState({showPayment: false})
+  }
 
   render() {
     const { auth, profile } = this.props;
@@ -77,6 +87,10 @@ class Fees extends Component {
           jobs={jobs}
           payments={this.state.selectedTable === "Pending" ? pending : paid}
           history={this.props.history}
+          showPayment={this.state.showPayment}
+          goBack={this.goBack}
+          onApprovePayment={this.onApprovePayment}
+          firestore={this.props.firestore}
         />
       </div>
     );

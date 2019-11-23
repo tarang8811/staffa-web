@@ -77,6 +77,10 @@ export class CreateJob extends Component {
   onSubmit = e => {
     e.preventDefault();
 
+    if(this.props.profile.budget < this.state.cost) {
+      alert("Insufficient funds in the account. Please add more funds or tell your owner to allocate more")
+    }
+
     const itemAdd = {
       jobNo: this.state.jobNo,
       name: this.state.name,
