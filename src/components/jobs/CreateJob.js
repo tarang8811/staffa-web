@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Dropdown, Icon } from 'semantic-ui-react'
 import 'semantic-ui-css/semantic.min.css'
 import { Maps } from "../sites/Map"
+import { updateProfile } from '../../store/bidApi/bidApi'
 
 
 const Timeslots = [
@@ -76,9 +77,13 @@ export class CreateJob extends Component {
 
   onSubmit = e => {
     e.preventDefault();
-
-    if(this.props.profile.budget < this.state.cost) {
+    let number = Object.values(this.state.slots).reduce((next, s) => {
+      return next += s.length
+    }, 0)
+    const totalCost = number * this.state.cost
+    if(this.props.profile.budget < totalCost ) {
       alert("Insufficient funds in the account. Please add more funds or tell your owner to allocate more")
+      return;
     }
 
     const itemAdd = {
@@ -102,6 +107,8 @@ export class CreateJob extends Component {
       body: JSON.stringify(itemAdd),
     }).then(response => {
       console.log(response)
+      const budget = this.props.profile.budget - totalCost
+      this.props.firestore.update({ collection: "Users", doc: this.props.auth.uid}, {budget});
       setTimeout(() => {
         this.props.history.push("/jobboard");
       }, 2000)

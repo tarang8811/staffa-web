@@ -251,7 +251,7 @@ export default class ChatBoard extends Component {
                             <div className="viewWrapItemLeft3">
                                 {this.isLastMessageLeft(index) ? (
                                     <img
-                                        src={this.currentPeerUser.bio.profilePicURL}
+                                        src={!!this.currentPeerUser.bio ? this.currentPeerUser.bio.profilePicURL : images.ic_default_avatar}
                                         alt="avatar"
                                         className="peerAvatarLeft"
                                     />
